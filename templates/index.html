@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <br>
+    <br>
+    <h1>{% block title %} Home Page {% endblock %}</h1>
+    <br>
+    <br>
+    <br>
+    <hr>
+    {% for s in students %}
+        <a href="{{ url_for('student', id=s['id']) }}">
+            <h2>{{ s["name"] }}</h2>
+        </a>
+        <span class="badge badge-primary">{{ s['created'] }}</span>
+        <hr>
+        <br>
+
+    {% endfor %}
+{% endblock %}
