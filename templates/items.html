@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %} 
+{% for i in data %}
+    <a href="{{ url_for('item', id=i['id']) }}">
+        <h2>{{ i["name"] }}</h2>
+    </a>
+    {%if i["student"] %}
+        <h3>Checked out by: {{i["student"]}}</h3>
+    {%endif%}
+    <hr>
+    <br>
+
+{% endfor %}
+{% endblock %}
