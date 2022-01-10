@@ -3,7 +3,7 @@
 {% block content %}
 <h1>{% block title %} Add New Items{% endblock %}</h1>
 
-<form method="post">
+<form action="/create/item" method="post" enctype="multipart/form-data">
     <br>
     <br>
     <input type="file" accept=".csv" name="file"/>

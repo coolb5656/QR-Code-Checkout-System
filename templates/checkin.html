@@ -4,12 +4,13 @@
 <h1>{% block title %} check in item {% endblock %}</h1>
 
 <form method="post">
-    <div class="form-group">
-        <label for="name">Name</label>
-        <input type="text" name="name"
-               placeholder="John Doe" class="form-control"
-               value="{{ request.form['name'] }}"></input>
-    </div>
+    <select name="name">
+        <option value="{{names[0]['name']}}" selected>{{names[0]["name"]}}</option>
+        {% for name in names[1:] %}
+          <option value="{{name['name']}}">{{name["name"]}}</option>
+        {% endfor %}
+      </select>
+      
     <div class="form-group">
         <label for="item">Item</label>
         <input type="text" name="item"
