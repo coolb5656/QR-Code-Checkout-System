@@ -8,7 +8,8 @@ $(document).ready(function(){
 
     $("#code").change(function addItem() {
         $.getJSON($SCRIPT_ROOT + '/scan', {
-            code: $('input[name="code"]').val(),
+            code: $('#code').val(),
+            action: 1
           }, function(data) {
             if(data.itemStatus && !(items.includes(data.item_id))){
               items.push(data.item_id)

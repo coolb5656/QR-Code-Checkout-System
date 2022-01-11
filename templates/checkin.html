@@ -1,22 +1,17 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<script src="{{url_for('static', filename='in.js')}}"></script>
+
 <h1>{% block title %} check in item {% endblock %}</h1>
 
-<form method="post">
-    <select name="name">
-        <option value="{{names[0]['name']}}" selected>{{names[0]["name"]}}</option>
-        {% for name in names[1:] %}
-          <option value="{{name['name']}}">{{name["name"]}}</option>
-        {% endfor %}
-      </select>
-      
-    <div class="form-group">
-        <label for="item">Item</label>
-        <input type="text" name="item"
-               placeholder="Camera" class="form-control"
-               value="{{ request.form['item'] }}"></input>
+<form id="form" method="post">
+      <br>
+    <input type = "button" id = "scan" value = "Scan" />
+    <div style="width:0;overflow: hidden;"><input type="text" id="code" name=code></div>
+    <div style="width:0;overflow: hidden;"><input type="text" id="ids" name=ids></div>
     </div>
+    <div id="items"></div>
     <div class="form-group">
         <button type="submit" class="btn btn-primary">Submit</button>
     </div>

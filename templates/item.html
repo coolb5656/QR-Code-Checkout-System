@@ -7,4 +7,9 @@
     <h1>{{item["name"]}}</h1>
     <br>
     <h3>Type: {{ item["type"] }}</h3>
+    <br>
+    {%if item["student"] %}
+        <h3>Checked out by: {{ item["student"] }}</h3>
+    {%endif%}
+
 {% endblock %}
