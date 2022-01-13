@@ -11,17 +11,21 @@ CREATE TABLE IF NOT EXISTS "student" (
 CREATE TABLE IF NOT EXISTS "item" (
 	"id"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 	"name"	TEXT NOT NULL,
-	"type"	TEXT NOT NULL
+	"type"	TEXT NOT NULL,
+	"status" TEXT NOT NULL,
+	"code" INTEGER NOT NULL UNIQUE,
+	"statusDate" TIMESTAMP NOT NULL,
+	"student_id" INTEGER,
+	FOREIGN KEY(student_id) REFERENCES student(id) ON UPDATE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS "checkout" (
-	"id"	INTEGER PRIMARY KEY AUTOINCREMENT,
-	"student_id" INTEGER NOT NULL,
-	"item_id"	INTEGER NOT NULL,
-	"dateOut"TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	FOREIGN KEY(student_id) REFERENCES student(id) ON UPDATE CASCADE,
-	FOREIGN KEY(item_id) REFERENCES item(id) ON UPDATE CASCADE
-);
+-- CREATE TABLE IF NOT EXISTS "checkout" (
+-- 	"id"	INTEGER PRIMARY KEY AUTOINCREMENT,
+-- 	"student_id" INTEGER NOT NULL,
+-- 	"item_id"	INTEGER NOT NULL,
+-- 	"dateOut"TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+-- 	FOREIGN KEY(item_id) REFERENCES item(id) ON UPDATE CASCADE
+-- );
 
 CREATE TABLE IF NOT EXISTS "checkin" (
 	"id"	INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -35,5 +39,5 @@ CREATE TABLE IF NOT EXISTS "checkin" (
 
 
 INSERT INTO "student"(name) VALUES("Luis Mata"),("Justin Weigand"),("Logan Mccleod");
-INSERT INTO "item"(name, type) VALUES("80D", "Camera"),("Sony A7", "Camera");
-INSERT INTO "checkout"(student_id, item_id) VALUES(1,1);
+INSERT INTO "item"(name, type, code, status, statusDate) VALUES("80D", "Camera", 1, "In", "2022-01-13 14:35:00"),
+														 ("Sony A7", "Camera", 2, "In", "2022-01-13 14:35:00");

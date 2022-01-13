@@ -1,11 +1,14 @@
+from datetime import datetime
 from os import replace
 from flask import Flask, render_template, request, url_for, flash, redirect, jsonify
 from werkzeug.exceptions import abort
 from werkzeug.utils import secure_filename
 import pandas as pd
-import sqlite3, json
+import sqlite3, json, time
 
 from db import connect
+
+time.strftime('%Y-%m-%d %H:%M:%S')
 
 app = Flask(__name__)
 app.secret_key = "test"
@@ -21,19 +24,19 @@ def index():
 @app.route('/student/<id>') # go to specific student
 def student(id):
     c= connect()
-    student = c.execute("SELECT s.id,i.id AS item_id,i.name AS item,c.dateOut,s.name AS student FROM student s LEFT JOIN checkout c on s.id=c.student_id LEFT JOIN item i ON i.id=c.item_id WHERE s.id=?",(id,))
+    student = c.execute("SELECT s.id,i.id AS item_id,i.name AS item,i.statusDate,s.name AS student FROM student s LEFT JOIN item i on s.id=i.student_id WHERE s.id=?",(id,))
     return render_template('student.html', student=student)
 
 @app.route("/items")
 def items():
     c = connect()
-    data = c.execute("SELECT i.id,i.name,s.name AS student FROM item i LEFT JOIN checkout c on i.id=c.item_id LEFT JOIN student s ON s.id=c.student_id")
+    data = c.execute("SELECT i.id,i.name,s.name AS student FROM item i LEFT JOIN student s ON s.id=i.student_id")
     return render_template("items.html", data=data)
 
 @app.route('/item/<id>') # go to specific item
 def item(id):
     c = connect()
-    i = c.execute("SELECT i.id,i.name,i.type,s.name AS student FROM item i LEFT JOIN checkout c on i.id=c.item_id LEFT JOIN student s ON s.id=c.student_id WHERE i.id=?", (id,)).fetchone()
+    i = c.execute("SELECT i.id,i.name,i.type,s.name AS student FROM item i LEFT JOIN student s ON s.id=i.student_id WHERE i.id=?", (id,)).fetchone()
     return render_template('item.html', item=i)
 
 @app.route('/create/item', methods=("GET", "POST")) # Add new item
@@ -41,9 +44,8 @@ def create_item():
     if request.method == 'POST':
         c = connect()
         f = request.files["file"]
-        fname = secure_filename(f.filename)
-        f.save("db/"+fname)
-        df = pd.read_csv("db/"+fname)
+        f.save("db/item.csv")
+        df = pd.read_csv("db/item.csv")
         df.to_sql("item", c, if_exists="replace")
         flash("Successfully added new items", "success")
         return redirect(url_for('index'))
@@ -54,9 +56,8 @@ def create_student():
     if request.method == 'POST':
         c = connect()
         f = request.files["file"]
-        fname = secure_filename(f.filename)
-        f.save("db/"+fname)
-        df = pd.read_csv("db/"+fname)
+        f.save("db/student.csv")
+        df = pd.read_csv("db/student.csv")
         df.to_sql("student", c, if_exists="replace")
         flash("Successfully added new students", "success")
         return redirect(url_for('index'))
@@ -74,7 +75,7 @@ def checkout():
         items=items.split(",")
 
         for i in items:
-            c.execute("INSERT INTO checkout(student_id, item_id) VALUES (?,?)",(student_id["id"],i))
+            c.execute("UPDATE item SET status='Out', student_id=?, statusDate=? WHERE id=?",(student_id["id"],datetime.now(),i))
             c.commit()
 
         flash("Successfully checked out items for "+name, "success")
@@ -92,8 +93,8 @@ def checkin():
         items=items.split(",")
 
         for i in items:
-            c.execute("INSERT INTO checkin(student_id, item_id, dateOut) SELECT student_id, item_id, dateOut FROM checkout WHERE item_id=?;", (i,))
-            c.execute("DELETE FROM checkout WHERE item_id=?;", (i,))
+            c.execute("INSERT INTO checkin(student_id, item_id, dateOut) SELECT student_id, id, statusDate FROM item WHERE id=?;", (i,))
+            c.execute("UPDATE item SET status='In', student_id=NULL, statusDate=? WHERE id=?",(datetime.now(),i))
             c.commit()
 
         flash("Successfully checked in items", "success")
@@ -111,9 +112,9 @@ def scan():
     if code:
         c = connect()
         if(action == 1):
-            items = c.execute("SELECT name, id FROM item WHERE id NOT IN (SELECT item_id FROM checkout) AND code=?;", (code,)).fetchone()
+            items = c.execute("SELECT name, id FROM item WHERE status='In' AND code=?;", (code,)).fetchone()
         elif(action == 0):
-            items = c.execute("SELECT name, id FROM item WHERE id IN (SELECT item_id FROM checkout) AND code=?;", (code,)).fetchone()
+            items = c.execute("SELECT name, id FROM item WHERE status!='In' AND code=?;", (code,)).fetchone()
         if(items == None):
             itemStatus=False
             return jsonify(result="", item_id=0, itemStatus=itemStatus)
